@@ -178,9 +178,9 @@ def make_heatmap(matrix: pd.DataFrame, title: str, ax: plt.Axes, vmin: float = -
     ax.tick_params(axis="y", rotation=0,  labelsize=10)
 
 plots = [
-    (pearson_r,  "Pearson r", -1, 1, "RdYlBu_r", "correlacion_pearson.png",(12, 9)),
-    (cramer_v,   "Cramér's V", 0, 1, "YlOrRd", "correlacion_cramer_v.png",(4,3)),
-    (eta_matrix, "Correlation Ratio η", 0, 1, "YlOrRd", "correlacion_eta.png",(6,6)),
+    (pearson_r,  "R de Pearson", -1, 1, "RdYlBu_r", "correlacion_pearson.png",(12, 9)),
+    (cramer_v,   "V de Cramér", 0, 1, "YlOrRd", "correlacion_cramer_v.png",(4,3)),
+    (eta_matrix, "Razón de correlación η", 0, 1, "YlOrRd", "correlacion_eta.png",(6,6)),
 ]
 for matrix, title, vmin, vmax, cmap, filename, figsize in plots:
     fig, ax = plt.subplots(figsize=figsize)
