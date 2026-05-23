@@ -261,6 +261,8 @@ for target in target_cols:
     y = work_df[target].dropna() # elimino nulos de y
     valid_idx = y.index
     X = work_df.loc[valid_idx, input_cols].dropna() # elimino filas de x que eliminei por ser nulos en y + elimino nulos en x
+    importance_results[target] = {}
+    importance_results[target]["index"] = X.index #gardo os índices para o posterior debuxo dos graficos
     for col in input_cols:#normalizo as variables cualitativas
         if X[col].dtype == object:
             X[col] = LabelEncoder().fit_transform(X[col].astype(str))
@@ -275,7 +277,6 @@ for target in target_cols:
         model.fit(X, y)
         model_type = "Regresión"
     imp = pd.Series(model.feature_importances_, index=input_cols).sort_values(ascending=False)#top featuress
-    importance_results[target] = {}
     importance_results[target]["top"] = imp # de cada target se almacena o top
     importance_results[target]["n"] = len(y)
     print("Variables máis importantes na predicion de cada target (Top 10 por target):")
@@ -287,7 +288,7 @@ for target, data in importance_results.items():
     imp = data["top"]
     n = data["n"]
     # Gráfico de barras de importancia
-    fig, ax = plt.subplots(figsize=(7, 3))
+    fig, ax = plt.subplots(figsize=(6, 3))
     top5 = imp.head(5)
     colors = plt.cm.Blues(np.linspace(0.1, 0.9, len(top5)))
     bars = ax.barh(top5.index[::-1], top5.values[::-1], color=colors[::-1])
@@ -309,8 +310,7 @@ for target, data in importance_results.items():
     top_vars = imp.head(2).index.tolist()
     fig, axes = plt.subplots(1, 2, figsize=(5 * 2, 3))
     for ax, feat in zip(axes, top_vars):
-        sub = work_df[[target, feat]].dropna()
-        sub = sub[sub[feat] != 0]
+        sub = work_df.loc[importance_results[target]["index"], [target, feat]]
         feat_is_cat = (sub[feat].dtype == object)
         target_is_cat = (work_df[target].dtype == object)
         if not target_is_cat and not feat_is_cat:
@@ -322,7 +322,7 @@ for target, data in importance_results.items():
             # Target categórico, feature numérico - boxplot por categoría de target
             categories = sorted(sub[target].astype(str).unique())
             data_by_cat = [sub[feat][sub[target].astype(str) == c].values for c in categories]
-            ax.boxplot(data_by_cat, labels=categories)
+            ax.boxplot(data_by_cat, labels=[f"{c}\n(n={len(d)})" for c, d in zip(categories, data_by_cat)])
             ax.set_xlabel(target)
             ax.set_ylabel(feat)
             ax.tick_params(axis="x", rotation=0)
@@ -330,7 +330,7 @@ for target, data in importance_results.items():
             # Feature categórico, target numérico - boxplot por categoría de feature
             categories = sorted(sub[feat].astype(str).unique())
             data_by_cat = [sub[target][sub[feat].astype(str) == c].values for c in categories]
-            ax.boxplot(data_by_cat, labels=categories)
+            ax.boxplot(data_by_cat, labels=[f"{c}\n(n={len(d)})" for c, d in zip(categories, data_by_cat)])
             ax.set_xlabel(feat)
             ax.set_ylabel(target)
             ax.tick_params(axis="x", rotation=0)
