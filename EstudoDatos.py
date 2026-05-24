@@ -310,7 +310,9 @@ for target, data in importance_results.items():
     top_vars = imp.head(2).index.tolist()
     fig, axes = plt.subplots(1, 2, figsize=(5 * 2, 3))
     for ax, feat in zip(axes, top_vars):
-        sub = work_df.loc[importance_results[target]["index"], [target, feat]]
+        sub = work_df.loc[importance_results[target]["index"], [target, feat]] # exactamente os datos que usei no rf
+        if feat in ingredient_set: #sen 0 nos ingredientes
+            sub = sub[sub[feat] != 0]
         feat_is_cat = (sub[feat].dtype == object)
         target_is_cat = (work_df[target].dtype == object)
         if not target_is_cat and not feat_is_cat:
@@ -338,6 +340,8 @@ for target, data in importance_results.items():
             # Ambos categóricos - heatmap de contingencia
             ct = pd.crosstab(sub[target], sub[feat])
             sns.heatmap(ct, ax=ax)
+        ax.grid(True, linestyle='--', alpha=0.5)
+        ax.yaxis.set_major_locator(plt.MaxNLocator(10))
     plt.tight_layout()
     plt.savefig(f"relacion_{target}.png", dpi=150, bbox_inches="tight")
     plt.close()
